@@ -4,6 +4,7 @@ import sys
 sys.path.append('./gen-py')
 
 from HelloWorld import HelloWorld
+from HelloWorld.ttypes import *
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -17,8 +18,10 @@ try:
     client = HelloWorld.Client(protocol)
     transport.open()
 
-    print "client - ping"
-    print "server - " + client.ping()
+    stu = Student('Jim', 20)
+
+    print "client - birth_year"
+    print "server - ", client.birth_year(stu)
 
     print "client - say"
     msg = client.say("Hello!")

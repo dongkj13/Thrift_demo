@@ -13,8 +13,11 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
 class HelloWorldHandler:
-    def ping(self):
-        return "pong"
+    def birth_year(self, stu):
+        print "name: ", stu.name
+        print "age: ", stu.age
+        print "birth_year: ", 2020 - stu.age
+        return 2020 - stu.age
 
     def say(self, msg):
         ret = "Received: " + msg

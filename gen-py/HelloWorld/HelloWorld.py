@@ -19,7 +19,11 @@ except:
 
 
 class Iface:
-  def ping(self):
+  def birth_year(self, stu):
+    """
+    Parameters:
+     - stu
+    """
     pass
 
   def say(self, msg):
@@ -37,18 +41,23 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def ping(self):
-    self.send_ping()
-    return self.recv_ping()
+  def birth_year(self, stu):
+    """
+    Parameters:
+     - stu
+    """
+    self.send_birth_year(stu)
+    return self.recv_birth_year()
 
-  def send_ping(self):
-    self._oprot.writeMessageBegin('ping', TMessageType.CALL, self._seqid)
-    args = ping_args()
+  def send_birth_year(self, stu):
+    self._oprot.writeMessageBegin('birth_year', TMessageType.CALL, self._seqid)
+    args = birth_year_args()
+    args.stu = stu
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_ping(self):
+  def recv_birth_year(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -56,12 +65,12 @@ class Client(Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = ping_result()
+    result = birth_year_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "ping failed: unknown result")
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "birth_year failed: unknown result")
 
   def say(self, msg):
     """
@@ -99,7 +108,7 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["ping"] = Processor.process_ping
+    self._processMap["birth_year"] = Processor.process_birth_year
     self._processMap["say"] = Processor.process_say
 
   def process(self, iprot, oprot):
@@ -117,13 +126,13 @@ class Processor(Iface, TProcessor):
       self._processMap[name](self, seqid, iprot, oprot)
     return True
 
-  def process_ping(self, seqid, iprot, oprot):
-    args = ping_args()
+  def process_birth_year(self, seqid, iprot, oprot):
+    args = birth_year_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = ping_result()
+    result = birth_year_result()
     try:
-      result.success = self._handler.ping()
+      result.success = self._handler.birth_year(args.stu)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -131,7 +140,7 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("ping", msg_type, seqid)
+    oprot.writeMessageBegin("birth_year", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -158,10 +167,19 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class ping_args:
+class birth_year_args:
+  """
+  Attributes:
+   - stu
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'stu', (Student, Student.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, stu=None,):
+    self.stu = stu
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -172,6 +190,12 @@ class ping_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.stu = Student()
+          self.stu.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -181,7 +205,11 @@ class ping_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('ping_args')
+    oprot.writeStructBegin('birth_year_args')
+    if self.stu is not None:
+      oprot.writeFieldBegin('stu', TType.STRUCT, 1)
+      self.stu.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -191,6 +219,7 @@ class ping_args:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.stu)
     return value
 
   def __repr__(self):
@@ -204,14 +233,14 @@ class ping_args:
   def __ne__(self, other):
     return not (self == other)
 
-class ping_result:
+class birth_year_result:
   """
   Attributes:
    - success
   """
 
   thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
+    (0, TType.I32, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -227,8 +256,8 @@ class ping_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString()
+        if ftype == TType.I32:
+          self.success = iprot.readI32()
         else:
           iprot.skip(ftype)
       else:
@@ -240,10 +269,10 @@ class ping_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('ping_result')
+    oprot.writeStructBegin('birth_year_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
+      oprot.writeFieldBegin('success', TType.I32, 0)
+      oprot.writeI32(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

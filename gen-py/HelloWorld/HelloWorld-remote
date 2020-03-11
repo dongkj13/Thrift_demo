@@ -16,15 +16,15 @@ from thrift.transport import TSSLSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-from HelloWord import HelloWorld
-from HelloWord.ttypes import *
+from HelloWorld import HelloWorld
+from HelloWorld.ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('')
   print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] function [arg1 [arg2...]]')
   print('')
   print('Functions:')
-  print('  string ping()')
+  print('  i32 birth_year(Student stu)')
   print('  string say(string msg)')
   print('')
   sys.exit(0)
@@ -82,11 +82,11 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = HelloWorld.Client(protocol)
 transport.open()
 
-if cmd == 'ping':
-  if len(args) != 0:
-    print('ping requires 0 args')
+if cmd == 'birth_year':
+  if len(args) != 1:
+    print('birth_year requires 1 args')
     sys.exit(1)
-  pp.pprint(client.ping())
+  pp.pprint(client.birth_year(eval(args[0]),))
 
 elif cmd == 'say':
   if len(args) != 1:
